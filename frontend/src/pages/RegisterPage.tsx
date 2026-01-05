@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -16,20 +17,16 @@ const RegisterPage = () => {
         setLoading(true);
 
         try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password,
-                    plateNumber: formData.carNumber // Map carNumber to plateNumber expected by backend
-                })
+            const response = await api.post('/auth/register', {
+                name: formData.name,
+                email: formData.email,
+                password: formData.password,
+                plateNumber: formData.carNumber // Map carNumber to plateNumber expected by backend
             });
 
-            const data = await response.json();
+            const data = response.data;
 
-            if (response.ok) {
+            if (response.status === 201 || response.status === 200) {
                 localStorage.setItem('userInfo', JSON.stringify(data));
                 navigate('/dashboard');
             } else {

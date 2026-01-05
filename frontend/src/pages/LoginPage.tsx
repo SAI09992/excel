@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -10,32 +11,20 @@ const LoginPage = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
+            const response = await api.post('/auth/login', formData);
 
-            // Check if response is JSON
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.indexOf("application/json") !== -1) {
-                const data = await response.json();
-                if (response.ok) {
-                    localStorage.setItem('userInfo', JSON.stringify(data));
-                    navigate('/dashboard');
-                } else {
-                    alert(data.message || 'Login failed');
-                }
+            const data = response.data;
+            if (response.status === 200) {
+                localStorage.setItem('userInfo', JSON.stringify(data));
+                navigate('/dashboard');
             } else {
-                // Not JSON (likely HTML error from proxy or 500)
-                const text = await response.text();
-                console.error('Non-JSON response:', text);
-                alert(`Server error: ${response.status} ${response.statusText}`);
+                alert(data.message || 'Login failed');
             }
 
         } catch (error: any) {
             console.error('Login error', error);
-            alert(`An error occurred: ${error.message}`);
+            const message = error.response?.data?.message || error.message || 'Login failed';
+            alert(`An error occurred: ${message}`);
         } finally {
             setLoading(false);
         }
