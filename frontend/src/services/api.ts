@@ -1,8 +1,18 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+    let url = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api';
+    if (!url.endsWith('/api') && !url.endsWith('/api/')) {
+        url = url.endsWith('/') ? `${url}api` : `${url}/api`;
+    }
+    return url;
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:5000/api'
+    baseURL: getBaseURL()
 });
+
+console.log('API Base URL set to:', api.defaults.baseURL);
 
 api.interceptors.request.use((config) => {
     const userInfo = localStorage.getItem('userInfo');
