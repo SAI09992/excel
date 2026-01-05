@@ -4,12 +4,16 @@ const router = express.Router();
 
 import Booking from '../models/Booking';
 
-import { protect } from '../middleware/authMiddleware';
+import { protect, optionalProtect } from '../middleware/authMiddleware';
 
-router.post('/', protect, async (req: any, res) => {
+router.post('/', optionalProtect, async (req: any, res) => {
     try {
         const { slotId, carNumber, startTime, endTime, source } = req.body;
-        const booking = await createBooking(req.user.id, carNumber, slotId, startTime, endTime, source || 'WEB');
+
+        // Use req.user.id if logged in (WEB), otherwise null (KIOSK will auto-link via plate)
+        const userId = req.user ? req.user.id : null;
+
+        const booking = await createBooking(userId, carNumber, slotId, startTime, endTime, source || 'WEB');
         res.json(booking);
     } catch (err: any) {
         res.status(400).json({ error: err.message });

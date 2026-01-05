@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 const ResetPasswordPage = () => {
     const { token } = useParams();
@@ -19,11 +19,12 @@ const ResetPasswordPage = () => {
         }
 
         try {
-            await axios.put(`http://localhost:5000/api/auth/resetpassword/${token}`, { password });
+            await api.put(`/auth/resetpassword/${token}`, { password });
             setMsg('Password updated! Redirecting...');
             setTimeout(() => navigate('/login'), 2000);
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Error occurred');
+            const message = err.response?.data?.message || err.message || 'Error occurred';
+            setError(message);
         }
     };
 

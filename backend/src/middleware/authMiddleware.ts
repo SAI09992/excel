@@ -13,15 +13,28 @@ export const protect = (req: AuthRequest, res: Response, next: NextFunction) => 
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
             req.user = decoded;
-            next();
+            return next();
         } catch (error) {
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        return res.status(401).json({ message: 'Not authorized, no token' });
     }
+};
+
+export const optionalProtect = (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            const token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret');
+            req.user = decoded;
+        } catch (error) {
+            // Ignore error for optional
+        }
+    }
+    next();
 };
 
 export const admin = (req: AuthRequest, res: Response, next: NextFunction) => {

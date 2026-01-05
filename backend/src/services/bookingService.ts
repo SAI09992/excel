@@ -19,12 +19,21 @@ export const createBooking = async (
         throw new Error('Slot not available');
     }
 
+    // Auto-link to user if they have an account with this plate
+    let linkedUserId = userId;
+    if (!linkedUserId && carNumber) {
+        const userWithPlate = await User.findOne({ managedCars: carNumber });
+        if (userWithPlate) {
+            linkedUserId = userWithPlate._id.toString();
+        }
+    }
+
     // Calculate cost (Logic placeholder)
     const durationHours = (new Date(endTime).getTime() - new Date(startTime).getTime()) / 36e5;
     const totalCost = Math.ceil(durationHours) * 50; // 50 per hour dummy rate
 
     const booking = new Booking({
-        userId,
+        userId: linkedUserId,
         source,
         carNumber,
         slotId,
